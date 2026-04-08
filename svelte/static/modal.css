@@ -1,0 +1,105 @@
+:root {
+  --modal-bg: #fff;
+  --modal-shadow: 0 8px 32px rgba(24, 28, 38, 0.18), 0 1.5px 6px rgba(24,28,38,0.10);
+  --modal-backdrop: rgba(24, 28, 38, 0.30);
+  --modal-header-color: #232946;
+  --modal-input-bg: #f7f7fa;
+  --modal-input-color: #232946;
+  --modal-input-border: #e0e6ed;
+  --modal-input-focus: #6c63ff;
+  --modal-action-bg: #f5f5f5;
+  --modal-action-color: #222;
+  --modal-action-hover-bg: #e0e0e0;
+  --modal-chosen-bg: #f3f7ff;
+  --modal-chosen-border: #b3d0ff;
+  --modal-available-bg: #fff;
+  --modal-available-border: #eee;
+  --modal-tag-bg: #e0e0e0;
+  --modal-tag-color: #222;
+  --modal-tag-hover-bg: #b3d0ff;
+  --modal-tag-chosen-bg: #90caf9;
+  --modal-tag-chosen-color: #222;
+  --modal-tag-chosen-border: #2196f3;
+  --modal-placeholder-color: #aaa;
+}
+
+body.dark {
+  --modal-bg: #23272a;
+  --modal-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 1.5px 6px rgba(0,0,0,0.25);
+  --modal-backdrop: rgba(24, 28, 38, 0.60);
+  --modal-header-color: #f3f3f3;
+  --modal-input-bg: #232d3a;
+  --modal-input-color: #f3f3f3;
+  --modal-input-border: #39557a;
+  --modal-input-focus: #90caf9;
+  --modal-action-bg: #181a1b;
+  --modal-action-color: #f3f3f3;
+  --modal-action-hover-bg: #292c31;
+  --modal-chosen-bg: #232d3a;
+  --modal-chosen-border: #39557a;
+  --modal-available-bg: #23272a;
+  --modal-available-border: #333a41;
+  --modal-tag-bg: #363b41;
+  --modal-tag-color: #f3f3f3;
+  --modal-tag-hover-bg: #39557a;
+  --modal-tag-chosen-bg: #39557a;
+  --modal-tag-chosen-color: #fff;
+  --modal-tag-chosen-border: #90caf9;
+  --modal-placeholder-color: #888;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--modal-backdrop);
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--modal-bg);
+  padding: 2.5rem 2rem 2rem 2rem;
+  border-radius: 14px;
+  z-index: 2001;
+  width: 80vw;
+  max-width: 700px;
+  min-width: 280px;
+  box-shadow: var(--modal-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: modal-in 0.22s cubic-bezier(.4,1.6,.7,1) both;
+  color: var(--modal-action-color);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+@keyframes modal-in {
+  from { transform: translate(-50%, -60%) scale(0.98); opacity: 0; }
+  to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+  
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.modal-actions button {
+  padding: 0.5rem 1.1rem;
+  border-radius: 5px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--modal-action-bg);
+  color: var(--modal-action-color);
+  transition: background 0.15s, color 0.15s;
+}
+
+.modal-actions button:hover {
+  background: var(--modal-action-hover-bg);
+}
