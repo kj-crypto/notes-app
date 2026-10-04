@@ -98,10 +98,15 @@ pub async fn upsert_data(id: Option<DataId>, data: Data) -> ApiResponse {
 }
 
 fn get_data_file() -> PathBuf {
-    const DATA_FILE: &str = env!("DATA_JSON_FILENAME", "DATA_JSON_FILENAME must be set at build time (e.g., via `DATA_JSON_FILENAME=yourfile.json cargo build`).");
+    const DEFAULT_DATA_FILE: &str = env!("DATA_JSON_FILENAME", "DATA_JSON_FILENAME must be set at build time (e.g., via `DATA_JSON_FILENAME=yourfile.json cargo build`).");
+    let mut data_file = DEFAULT_DATA_FILE.to_string();
+    match std::env::var("DATA_JSON_FILENAME") {
+        Ok(env) => { if !env.is_empty() { data_file = env } },
+        Err(_) => ()
+    }
     // In development, use env variable
     if cfg!(debug_assertions) {
-        PathBuf::from(DATA_FILE)
+        PathBuf::from(data_file)
     } else {
         // In production, try to use the AppImage location if available
         if let Ok(appimage_path) = env::var("APPIMAGE") {
@@ -109,14 +114,14 @@ fn get_data_file() -> PathBuf {
                 .parent()
                 .map(|p| p.to_path_buf())
                 .unwrap_or_else(|| PathBuf::from("."));
-            dir.join(DATA_FILE)
+            dir.join(data_file)
         } else {
             // Fallback: use the directory of the running binary
             env::current_exe()
                 .ok()
                 .and_then(|exe| exe.parent().map(|p| p.to_path_buf()))
                 .unwrap_or_else(|| PathBuf::from("."))
-                .join(DATA_FILE)
+                .join(data_file)
         }
     }
 }
