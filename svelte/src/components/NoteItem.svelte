@@ -3,7 +3,7 @@
   import NoteModal from './NoteModal.svelte';
   import { deleteData } from '$lib/tauriInvokes';
   import { toasts } from '$lib/toastStore';
-  import { ogMetaStore } from '$lib/ogMetaStore';
+  import { getOgMeta } from '$lib/ogMetaFetch';
   import type { OgMeta } from '$lib/tauriInvokes';
   import { openUrl } from '$lib/tauriInvokes';
 
@@ -35,7 +35,7 @@
 
   const fetchOgMeta = async () => {
     if (data.type !== 'link') return;
-    ogMeta = (await ogMetaStore.fetch(data.data)) || {};
+    ogMeta = (await getOgMeta(data.data)) || {};
   };
 
   $effect(() => {
