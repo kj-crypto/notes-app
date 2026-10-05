@@ -4,7 +4,6 @@
   let {
     filterData = $bindable(),
     tags,
-    onChange,
   }: {
     filterData: {
       contentFilter: string;
@@ -12,20 +11,12 @@
       selectedTags: string[];
     };
     tags: string[];
-    onChange: () => void;
   } = $props();
 
   let showTagModal = $state(false);
 
-  function onInput(event: Event) {
-    filterData.contentFilter = (event.target as HTMLInputElement).value;
-    onChange();
-  }
-
-  // Remove tag
   function removeTag(tag: string) {
     filterData.selectedTags = filterData.selectedTags.filter((t) => t !== tag);
-    onChange();
   }
 
   const typeStates: { key: 'both' | 'note' | 'link'; label: string; icon: string }[] = [
@@ -37,14 +28,13 @@
 
 <div class="filter-navbar">
   <div class="input-clear-wrapper">
-    <input type="text" placeholder="Filter content..." bind:value={filterData.contentFilter} oninput={onInput} />
+    <input type="text" placeholder="Filter content..." bind:value={filterData.contentFilter} />
     {#if filterData.contentFilter}
       <button
         type="button"
         class="clear-btn"
         onclick={() => {
           filterData.contentFilter = '';
-          onChange();
         }}
         aria-label="Clear"
         tabindex="-1">&times;</button
@@ -58,7 +48,6 @@
           class:selected={filterData.typeFilter === state.key}
           onclick={() => {
             filterData.typeFilter = state.key;
-            onChange();
           }}
           aria-pressed={filterData.typeFilter === state.key}
           type="button"
@@ -82,7 +71,7 @@
   </div>
 </div>
 
-<TagsFilterModal bind:showTagModal bind:selectedTags={filterData.selectedTags} {tags} {onChange} />
+<TagsFilterModal bind:showTagModal bind:selectedTags={filterData.selectedTags} {tags} />
 
 <style>
   .input-clear-wrapper input[type='text'] {

@@ -3,7 +3,7 @@
   import NoteModal from './NoteModal.svelte';
   import { deleteData } from '$lib/tauriInvokes';
   import { toasts } from '$lib/toastStore';
-  import { getOgMeta } from '$lib/ogMetaFetch';
+  import { getOgMeta } from '$lib/appState';
   import type { OgMeta } from '$lib/tauriInvokes';
   import { openUrl } from '$lib/tauriInvokes';
 

@@ -2,14 +2,13 @@
   import NoteModal from '$components/NoteModal.svelte';
   import ToastContainer from '$components/ToastContainer.svelte';
   import NotesList from '$components/NotesList.svelte';
-  import { getData } from '$lib/tauriInvokes';
+  import { getData, appData } from '$lib/tauriInvokes';
   import FilterNavBar from '$components/FilterNavBar.svelte';
   import ThemeToggle from '$components/ThemeToggle.svelte';
+  import { onMount } from 'svelte';
 
   let showModal = $state(false);
   let modalType: 'link' | 'note' = $state('link');
-  let items: Record<number, any> = $state({});
-  let databaseItems: Record<number, any> = $state({});
 
   let filterData: {
     contentFilter: string;
@@ -21,47 +20,45 @@
     selectedTags: [],
   });
 
-  let tags: string[] = $state([]);
+  onMount(() => {
+    getData();
+  })
 
-  async function loadItems() {
-    databaseItems = await getData();
-  }
+  let tags = $derived(
+    Array.from(new Set(Array.from(appData.values()).flatMap((item) => item.tags)))
+  );
 
-  function filterItems() {
-    // Start with all entries from databaseItems
-    let filteredEntries = Object.entries(databaseItems);
+  let filteredIds = $derived.by(() => {
+    const entries = Array.from(appData.entries());
 
-    // Apply tag filter
-    if (filterData.selectedTags.length !== 0) {
-      filteredEntries = filteredEntries.filter(([_, item]) => item.tags.some((tag: string) => filterData.selectedTags.includes(tag)));
-    }
+    return entries
+      .filter(([_, item]) => {
+        if (filterData.selectedTags.length > 0 && !item.tags.some(t => filterData.selectedTags.includes(t))) return false;
+        if (filterData.typeFilter !== 'both' && item.type !== filterData.typeFilter) return false;
+        if (filterData.contentFilter.trim() !== '' && !item.data.toLowerCase().includes(filterData.contentFilter.toLowerCase())) return false;
+        return true;
+      })
+      .map(([id, _]) => id);
+  });
 
-    // Apply type filter
-    if (filterData.typeFilter !== 'both') {
-      filteredEntries = filteredEntries.filter(([_, item]) => item.type === filterData.typeFilter);
-    }
+  // logging
+  $effect(() => {
+    console.log('🔄 Filter changed:', $state.snapshot(filterData));
+  });
 
-    // Apply content filter
-    if (filterData.contentFilter.trim() !== '') {
-      filteredEntries = filteredEntries.filter(([_, item]) => item.data.toLowerCase().includes(filterData.contentFilter.toLowerCase()));
-    }
+  $effect(() => {
+    console.log('📊 New filtered IDs (N = ', filteredIds.length, '):', filteredIds);
+  });
 
-    // Reconstruct items, preserving original keys
-    items = Object.fromEntries(filteredEntries);
-  }
+  $effect(() => {
+    console.log('appData changed', appData);
+  })
 
-  async function onChange() {
-    await loadItems();
-    tags = Array.from(new Set(Object.values(databaseItems).flatMap((item) => item.tags)));
-    filterItems();
-  }
-
-  onChange();
 </script>
 
 <div class="page-root">
   <div class="navbar">
-    <FilterNavBar bind:filterData {onChange} {tags} />
+    <FilterNavBar bind:filterData {tags} />
     <div class="navbar-actions">
       <button
         onclick={() => {

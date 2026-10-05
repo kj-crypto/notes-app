@@ -3,8 +3,7 @@
     showTagModal = $bindable(false),
     selectedTags = $bindable([]),
     tags,
-    onChange,
-  }: { showTagModal: boolean; selectedTags: string[]; tags: string[]; onChange: () => void } = $props();
+  }: { showTagModal: boolean; selectedTags: string[]; tags: string[]; } = $props();
 
   let filter = $state('');
 
@@ -16,6 +15,14 @@
   }
   function unchoose(tag: string) {
     selectedTags = selectedTags.filter((t) => t !== tag);
+  }
+  function close() {
+    filter = '';
+    showTagModal = false;
+  }
+  function clear() {
+    filter = '';
+    selectedTags = [];
   }
 </script>
 
@@ -35,7 +42,7 @@
             {/each}
           </div>
           <!-- Filter input -->
-          <input class="tag-filter-input" placeholder="Filter tags..." bind:value={filter} autofocus />
+          <input class="tag-filter-input" placeholder="Filter tags..." bind:value={filter} />
           <!-- Available tags box -->
           <div class="available-tags">
             {#if availableTags.length === 0}
@@ -48,12 +55,8 @@
         </div>
         <div class="modal-actions">
           <button
-            onclick={() => {
-              showTagModal = false;
-              onChange();
-            }}>Apply</button
-          >
-          <button onclick={() => (showTagModal = false)}>Close</button>
+            onclick={clear}>Clear</button>
+          <button onclick={close}>Close</button>
         </div>
       </div>
     </div>

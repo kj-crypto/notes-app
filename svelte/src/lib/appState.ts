@@ -1,11 +1,12 @@
 import { fetchOgMeta } from './tauriInvokes';
-import type { OgMeta } from './tauriInvokes';
+import type { OgMeta, Data } from './tauriInvokes';
 
 const ogMetaCache = new Map<string, OgMeta | null>();
 const pendingPromises = new Map<string, Promise<OgMeta | null>>();
 
 export async function getOgMeta(url: string): Promise<OgMeta | null> {
-  if (ogMetaCache.has(url)) {
+  console.log("Try to fetch OG meta for", url);
+  if (ogMetaCache.has(url) && ogMetaCache.get(url) !== null) {
     return Promise.resolve(ogMetaCache.get(url)!);
   }
   if (pendingPromises.has(url)) {
@@ -18,7 +19,8 @@ export async function getOgMeta(url: string): Promise<OgMeta | null> {
       ogMetaCache.set(url, meta);
       return meta;
     }
-    catch {
+    catch (error) {
+      console.error('Failed to fetch OG meta:', error);
       return null;
     }
     finally {
