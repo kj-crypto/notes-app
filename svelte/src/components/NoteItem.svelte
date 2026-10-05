@@ -59,7 +59,20 @@
   {#if data.type === 'link' && (ogMeta.title || ogMeta.description || ogMeta.image)}
     <div class="item-header">
       {#if ogMeta.title}
-        <div class="item-title">{ogMeta.title}</div>
+        {#if !ogMeta.image}
+          <a
+            href="#top"
+            class="item-title-link"
+            onclick={(e) => {
+              e.preventDefault();
+              openUrl(data.data, 'firefox', true);
+            }}
+          >
+            <div class="item-title">{ogMeta.title}</div>
+          </a>
+        {:else}
+          <div class="item-title">{ogMeta.title}</div>
+        {/if}
       {/if}
       {@render itemActions()}
     </div>
@@ -135,6 +148,16 @@
     margin-bottom: 2px;
     gap: 0.5rem;
     flex-wrap: nowrap;
+  }
+
+  .item-title-link {
+    text-decoration: none;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .item-title-link:hover .item-title {
+    text-decoration: underline;
+    color: var(--note-link);
   }
 
   .item-title {
