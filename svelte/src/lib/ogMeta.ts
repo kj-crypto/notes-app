@@ -1,5 +1,5 @@
 import { fetchOgMeta } from './tauriInvokes';
-import type { OgMeta, Data } from './tauriInvokes';
+import type { OgMeta } from './tauriInvokes';
 
 const ogMetaCache = new Map<string, OgMeta | null>();
 const pendingPromises = new Map<string, Promise<OgMeta | null>>();

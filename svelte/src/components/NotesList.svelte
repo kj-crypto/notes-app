@@ -2,60 +2,42 @@
   import { onMount, onDestroy } from 'svelte';
   import NoteItem from './NoteItem.svelte';
 
-  let { items = $bindable(), onChange }: { items: Record<number, any>; onChange: () => void } = $props();
+  let { filteredIds }: { filteredIds: number[] } = $props();
 
-  let noteRefs: Record<number, HTMLElement> = $state({});
-  let numColumns = $derived.by(() => computeNumColumns());
+  $effect(() => {
+    console.log("++ NotesList, ids changed ", filteredIds);
+  })
 
-  function computeNumColumns() {
-    const maxTotalWidth = 3440;
-    const gap = 10;
-    const width = Math.min(window.innerWidth, maxTotalWidth);
+  let heights = $state<Record<number, number>>({});
 
     const n = Math.floor((width - 2 * gap) / (columnWidth + gap));
     return Math.min(Object.keys(items).length, Math.max(1, n));
   }
 
-  function updateNumColumns() {
-    numColumns = computeNumColumns();
-  }
+  $effect(() => {
+    console.log("++ NotesList, heights changed ", $state.snapshot(heights));
+  })
 
-  let columnWidth = $derived.by(() => {
-    const firstRef: HTMLElement = noteRefs[Number(Object.keys(noteRefs)[0])];
-    if (firstRef) {
-      return firstRef.offsetWidth;
-    }
-    return 320;
-  });
-
-  onMount(() => {
-    updateNumColumns();
-    window.addEventListener('resize', updateNumColumns);
-  });
-  onDestroy(() => {
-    window.removeEventListener('resize', updateNumColumns);
-  });
-
+  let numColumns = 2;
   let columns = $derived.by(() => {
-    const cols: Array<Array<[string, any]>> = Array.from({ length: numColumns }, () => []);
-    const columnHeights = Array(numColumns).fill(0);
-
-    for (const [id, data] of Object.entries(items)) {
-      const ref = noteRefs[Number(id)];
-      const height = ref ? ref.offsetHeight : 0;
-      const minIndex = columnHeights.indexOf(Math.min(...columnHeights));
-      cols[minIndex].push([id, data]);
-      columnHeights[minIndex] += height;
+    const cols = Array.from({ length: numColumns }, () => []) as number[][]
+    for (const id of filteredIds) {
+      const colIndex = id % numColumns;
+      cols[colIndex].push(id);
     }
     return cols;
   });
 </script>
 
-<div class="notes-masonry">
-  {#each columns as column}
-    <div class="notes-column" style="width: {columnWidth}px">
-      {#each column as [id, data] (id)}
-        <NoteItem id={Number(id)} {data} {onChange} bind:rootEl={noteRefs[Number(id)]} />
+<div class="notes-masonry debug-masonry">
+  {#each columns as column, colIdx}
+    <div class="notes-column debug-column" style="width: {COLUMN_WIDTH}px">
+      <span class="debug-col-label">Column {colIdx + 1}</span>
+
+      {#each column as id (id)}
+        <div class="tile-wrapper debug-tile">
+          <NoteItem {id} />
+        </div>
       {/each}
     </div>
   {/each}

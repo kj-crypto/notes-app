@@ -1,51 +1,54 @@
 <script lang="ts">
   import ConfirmModal from './ConfirmModal.svelte';
   import NoteModal from './NoteModal.svelte';
-  import { deleteData } from '$lib/tauriInvokes';
   import { toasts } from '$lib/toastStore';
-  import { getOgMeta } from '$lib/appState';
+  import { getOgMeta } from '$lib/ogMeta';
   import type { OgMeta } from '$lib/tauriInvokes';
-  import { openUrl } from '$lib/tauriInvokes';
+  import { openUrl, appData, deleteData } from '$lib/tauriInvokes';
+  import { untrack } from 'svelte';
 
   let {
     id,
-    data,
-    onChange,
-    rootEl = $bindable(),
+    // rootEl = $bindable(),
   }: {
     id: number;
-    data: { type: string; data: string; tags: string[] };
-    onChange: () => void;
-    rootEl?: HTMLElement;
+    // rootEl?: HTMLElement
   } = $props();
   let showConfirm = $state(false);
   let showEditModal = $state(false);
   let ogMeta: OgMeta = $state({});
+  let data = $derived(appData.get(id)!);
 
   const onDelete: () => void = async () => {
     showConfirm = false;
     const response = await deleteData(id);
     if (response.status === 'success') {
       toasts.show('Item deleted', 'success');
-      onChange();
     } else {
       toasts.show(`Failed to delete item: ${response.message}`, 'error');
     }
   };
 
-  const fetchOgMeta = async () => {
-    if (data.type !== 'link') return;
-    ogMeta = (await getOgMeta(data.data)) || {};
-  };
+  console.log("Created item of id", id);
 
   $effect(() => {
-    fetchOgMeta();
+    const url = data.data;
+    console.log("Item ", id, "appered in DOM");
+
+    untrack(async () => {
+      if (data.type !== 'link' || !url) return;
+      const result = await getOgMeta(url);
+      if (result) {
+        ogMeta = result;
+      }
+    });
+    return () => console.log("Item ", id, "removed from DOM");
   });
 </script>
 
 <ConfirmModal bind:open={showConfirm} message="Are you sure you want to delete this item?" onConfirm={onDelete} onCancel={() => (showConfirm = false)} />
 {#if showEditModal}
-  <NoteModal bind:open={showEditModal} type={data.type} {id} content={data.data} tags={data.tags.join(', ')} onSubmit={onChange} />
+  <NoteModal bind:open={showEditModal} type={data.type} {id} content={data.data} tags={data.tags.join(', ')} />
 {/if}
 
 {#snippet itemActions()}
@@ -63,7 +66,7 @@
   </div>
 {/snippet}
 
-<div bind:this={rootEl} class="item-container">
+<div class="item-container">
   {#if data.type === 'link' && (ogMeta.title || ogMeta.description || ogMeta.image)}
     <div class="item-header">
       {#if ogMeta.title}

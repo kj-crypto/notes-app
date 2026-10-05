@@ -1,7 +1,7 @@
 <script lang="ts">
   import { upsertData, type Data } from '$lib/tauriInvokes';
   import { toasts } from '$lib/toastStore';
-  let { content = '', tags = '', type = 'link', open = $bindable(false), id = null, onSubmit = () => {} } = $props();
+  let { content = '', tags = '', type = 'link', open = $bindable(false), id = null } = $props();
 
   function close() {
     content = '';
@@ -35,7 +35,6 @@
     const response = await upsertData(payload);
     if (response.status === 'success') {
       toasts.show(`${type === 'link' ? 'Link' : 'Note'} saved!`, 'success');
-      onSubmit();
     } else {
       toasts.show(`${type === 'link' ? 'Link' : 'Note'} failed to save. ${response.message}`, 'error');
     }

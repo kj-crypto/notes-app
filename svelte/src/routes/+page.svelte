@@ -77,11 +77,11 @@
   </div>
 
   <div class="noteslist-scroll">
-    <NotesList bind:items {onChange} />
+    <NotesList {filteredIds} />
   </div>
 </div>
 
-<NoteModal bind:open={showModal} type={modalType} onSubmit={onChange} />
+<NoteModal bind:open={showModal} type={modalType} />
 <ToastContainer />
 
 <style>
