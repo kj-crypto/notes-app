@@ -7,13 +7,7 @@
   import { openUrl, appData, deleteData } from '$lib/tauriInvokes';
   import { untrack } from 'svelte';
 
-  let {
-    id,
-    // rootEl = $bindable(),
-  }: {
-    id: number;
-    // rootEl?: HTMLElement
-  } = $props();
+  let { id }: { id: number } = $props();
   let showConfirm = $state(false);
   let showEditModal = $state(false);
   let ogMeta: OgMeta = $state({});
@@ -116,6 +110,9 @@
 
 <style>
   .item-container {
+    box-sizing: border-box;
+    width: 100%;
+
     display: flex;
     flex-direction: column;
     gap: 0.12rem;
@@ -124,7 +121,6 @@
     background: var(--note-bg);
     box-shadow: var(--note-shadow-main);
     border: 1px solid var(--note-border);
-    width: 300px;
     margin: 0;
     transition:
       box-shadow 0.15s,
