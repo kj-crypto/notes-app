@@ -10,19 +10,26 @@
   let heights = $state<Record<number, number>>({});
 
   function watchHeight(node: HTMLElement, id: number) {
+    let frameId: number;
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const newHeight = entry.borderBoxSize?.[0]?.blockSize ?? node.offsetHeight;
         if (heights[id] !== newHeight) {
-          heights[id] = newHeight;
+          cancelAnimationFrame(frameId);
+          frameId = requestAnimationFrame(() => {
+            heights[id] = newHeight;
+          });
         }
       }
     });
     observer.observe(node);
     return {
       destroy() {
+        cancelAnimationFrame(frameId);
         observer.disconnect();
-        delete heights[id];
+        if (id in heights) {
+          delete heights[id];
+        }
       }
     };
   }
