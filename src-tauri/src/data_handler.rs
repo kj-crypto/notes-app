@@ -1,10 +1,8 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
-use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use std::path::{PathBuf};
 use std::env;
-
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -20,37 +18,31 @@ pub struct Data {
     pub tags: Vec<String>,
 }
 
-#[derive(Serialize)]
-pub struct ApiResponse {
-    pub status: String,
-    pub message: String,
-}
-
 pub type DataId = u64;
 pub type DataMap = HashMap<DataId, Data>;
 
-pub static CACHED_DATA: Lazy<Mutex<DataMap>> = Lazy::new(|| Mutex::new(HashMap::new()));
-pub static LAST_ID: Lazy<Mutex<DataId>> = Lazy::new(|| Mutex::new(0));
-
-#[tauri::command]
-pub async fn get_data() -> Result<DataMap, String> {
-    load_data();
-    let data = CACHED_DATA.lock().unwrap();
-    Ok(data.clone())
+pub struct AppState {
+  pub data: Mutex<DataMap>,
+  pub last_id: Mutex<DataId>,
 }
 
-fn load_data() {
-    let mut data = CACHED_DATA.lock().unwrap();
-    let mut last_id = LAST_ID.lock().unwrap();
-    let file = get_data_file();
+#[tauri::command]
+pub async fn get_data(state: tauri::State<'_, AppState>) -> Result<DataMap, String> {
+    let mut data = state.data.lock().unwrap();
+    let mut last_id = state.last_id.lock().unwrap();
     if data.is_empty() {
-        if std::fs::metadata(&file).is_err() {
-            *data = HashMap::new();
-        } else {
-            *data = serde_json::from_str(&std::fs::read_to_string(file).unwrap()).unwrap();
+        let file = get_data_file();
+        *data = HashMap::new();
+        if std::fs::metadata(&file).is_ok() {
+            if let Ok(content) = std::fs::read_to_string(&file) {
+                if let Ok(parsed) = serde_json::from_str(&content) {
+                    *data = parsed;
+                    *last_id = *data.keys().max().unwrap_or(&0);
+                }
+            }
         }
     }
-    *last_id = *data.keys().max().unwrap_or(&0);
+    Ok(data.clone())
 }
 
 fn save_data(data: &DataMap) {
@@ -59,27 +51,29 @@ fn save_data(data: &DataMap) {
 }
 
 #[tauri::command]
-pub async fn delete_data(id: DataId) -> ApiResponse {
-    let mut data = CACHED_DATA.lock().unwrap();
-    let mut last_id = LAST_ID.lock().unwrap();
+pub async fn delete_data(id: DataId, state: tauri::State<'_, AppState>) -> Result<DataId, String> {
+    let mut data = state.data.lock().unwrap();
+    let mut last_id = state.last_id.lock().unwrap();
     if data.remove(&id).is_none() {
-        return ApiResponse { status: "error".to_string(), message: "Data not found".to_string() };
+        return Err("Data not found".to_string());
     }
     save_data(&data);
     *last_id = *data.keys().max().unwrap_or(&0);
-    ApiResponse { status: "success".to_string(), message: "Data deleted".to_string() }
+    Ok(id)
 }
 
 #[tauri::command]
-pub async fn upsert_data(id: Option<DataId>, data: Data) -> ApiResponse {
-    let mut cached_data = CACHED_DATA.lock().unwrap();
-    let mut last_id = LAST_ID.lock().unwrap();
+pub async fn upsert_data(id: Option<DataId>, data: Data, state: tauri::State<'_, AppState>) -> Result<DataId, String> {
+    let mut cached_data = state.data.lock().unwrap();
+    let mut last_id = state.last_id.lock().unwrap();
+    let changed_id;
     if let Some(id) = id {
         if let Some(value) = cached_data.get_mut(&id) {
             *value = data.clone();
+            changed_id = id;
         }
         else {
-            return ApiResponse { status: "error".to_string(), message: format!("Id {} not found", id) };
+            return Err(format!("Id {} not found", id));
         }
     }
     else {
@@ -87,14 +81,15 @@ pub async fn upsert_data(id: Option<DataId>, data: Data) -> ApiResponse {
         if data.r#type == Type::Link {
            for obj in cached_data.values() {
                if obj.data == data.data {
-                   return ApiResponse { status: "error".to_string(), message: format!("Link {} already exists", data.data) };
+                   return Err(format!("Link {} already exists", data.data));
                }
            }
         }
         cached_data.insert(*last_id, data.clone());
+        changed_id = *last_id;
     }
     save_data(&cached_data);
-    ApiResponse { status: "success".to_string(), message: "Data updated".to_string() }
+    Ok(changed_id)
 }
 
 fn get_data_file() -> PathBuf {

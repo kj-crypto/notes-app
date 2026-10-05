@@ -1,6 +1,9 @@
 mod ogmeta;
 mod data_handler;
 mod link_opener;
+use std::sync::Mutex;
+use std::collections::HashMap;
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -13,7 +16,11 @@ pub fn run() {
             .level(log::LevelFilter::Info)
             .build(),
         )?;
-      }
+      };
+      app.manage(data_handler::AppState {
+        data: Mutex::new(HashMap::new()),
+        last_id: Mutex::new(0),
+      });
       Ok(())
     })
     .run(tauri::generate_context!())
