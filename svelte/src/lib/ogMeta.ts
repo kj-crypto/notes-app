@@ -5,7 +5,6 @@ const ogMetaCache = new Map<string, OgMeta | null>();
 const pendingPromises = new Map<string, Promise<OgMeta | null>>();
 
 export async function getOgMeta(url: string): Promise<OgMeta | null> {
-  console.log("Try to fetch OG meta for", url);
   if (ogMetaCache.has(url) && ogMetaCache.get(url) !== null) {
     return Promise.resolve(ogMetaCache.get(url)!);
   }

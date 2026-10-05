@@ -40,20 +40,6 @@
       })
       .map(([id, _]) => id);
   });
-
-  // logging
-  $effect(() => {
-    console.log('🔄 Filter changed:', $state.snapshot(filterData));
-  });
-
-  $effect(() => {
-    console.log('📊 New filtered IDs (N = ', filteredIds.length, '):', filteredIds);
-  });
-
-  $effect(() => {
-    console.log('appData changed', appData);
-  })
-
 </script>
 
 <div class="page-root">

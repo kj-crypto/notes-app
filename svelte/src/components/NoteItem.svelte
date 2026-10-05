@@ -23,12 +23,8 @@
     }
   };
 
-  console.log("Created item of id", id);
-
   $effect(() => {
     const url = data.data;
-    console.log("Item ", id, "appered in DOM");
-
     untrack(async () => {
       if (data.type !== 'link' || !url) return;
       const result = await getOgMeta(url);
@@ -36,7 +32,6 @@
         ogMeta = result;
       }
     });
-    return () => console.log("Item ", id, "removed from DOM");
   });
 </script>
 
