@@ -8,6 +8,7 @@
   let { filteredIds }: { filteredIds: number[] } = $props();
   let numColumns = $state(1);
   let containerHeight = $state(0);
+  let containerWidth = $derived(numColumns * (COLUMN_WIDTH + GAP) - GAP);
   let layoutVector = $state<Record<number, { height: number; top: number; left: number }>>({});
 
   // grid
@@ -130,34 +131,40 @@
   });
 </script>
 
-<div
-  class="notes-masonry-grid"
-  style="height: {containerHeight}px; --grid-gap: {GAP}px; --col-width: {COLUMN_WIDTH}px"
->
-  {#each Object.keys(layoutVector) as strId (strId)}
-    {@const id = Number(strId)}
-    {@const layout = layoutVector[id]}
-    {#if layout}
-        <div
-          class="tile-absolute-wrapper"
-          style="transform: translate3d({layout.left}px, {layout.top}px, 0);"
-        >
-          <NoteItem {id} onHeightChange={fetchItemHeight} />
-        </div>
-      {/if}
-  {/each}
+<div class="notes-list-container">
+  <div
+    class="notes-masonry-grid"
+    style="height: {containerHeight}px; width: {containerWidth}px; --col-width: {COLUMN_WIDTH}px"
+  >
+    {#each Object.keys(layoutVector) as strId (strId)}
+      {@const id = Number(strId)}
+      {@const layout = layoutVector[id]}
+      {#if layout}
+          <div
+            class="tile-absolute-wrapper"
+            style="transform: translate3d({layout.left}px, {layout.top}px, 0);"
+          >
+            <NoteItem {id} onHeightChange={fetchItemHeight} />
+          </div>
+        {/if}
+    {/each}
+  </div>
 </div>
 
 <style>
+  .notes-list-container {
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
   .notes-masonry-grid {
     position: relative;
-    width: 100%;
-    margin: 0 auto;
-    padding: 20px;
     box-sizing: border-box;
     display: block;
 
-    transition: height 0.25s ease;
+    transition: height 0.25s ease, width 0.25s ease;
   }
 
   .tile-absolute-wrapper {
