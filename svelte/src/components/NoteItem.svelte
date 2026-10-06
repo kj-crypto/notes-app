@@ -5,13 +5,18 @@
   import { getOgMeta } from '$lib/ogMeta';
   import type { OgMeta } from '$lib/tauriInvokes';
   import { openUrl, appData, deleteData } from '$lib/tauriInvokes';
-  import { untrack } from 'svelte';
+  import { tick } from 'svelte';
 
-  let { id }: { id: number } = $props();
+  let { id, onHeightChange }: {
+    id: number;
+    onHeightChange: (id: number, height: number) => void
+  } = $props();
   let showConfirm = $state(false);
   let showEditModal = $state(false);
   let ogMeta: OgMeta = $state({});
   let data = $derived(appData.get(id)!);
+  let height = 0;
+  let eleRef = $state<HTMLElement | null>(null);
 
   const onDelete: () => void = async () => {
     showConfirm = false;
@@ -23,11 +28,27 @@
     }
   };
 
+  const updateHeight = async () => {
+    await tick();
+    if (eleRef) {
+      const newHeight = eleRef.offsetHeight;
+      if (newHeight > 0 && newHeight !== height) {
+        height = newHeight;
+        onHeightChange(id, height);
+      }
+    }
+  };
+
+  $effect(() => {
+    data;
+    ogMeta;
+    updateHeight();
+  });
+
   $effect(() => {
     const url = data.data;
-    untrack(async () => {
-      if (data.type !== 'link' || !url) return;
-      const result = await getOgMeta(url);
+    if (data.type !== 'link' || !url) return;
+    getOgMeta(url).then((result) => {
       if (result) {
         ogMeta = result;
       }
@@ -55,7 +76,7 @@
   </div>
 {/snippet}
 
-<div class="item-container">
+<div bind:this={eleRef} class="item-container">
   {#if data.type === 'link' && (ogMeta.title || ogMeta.description || ogMeta.image)}
     <div class="item-header">
       {#if ogMeta.title}
@@ -88,7 +109,7 @@
               openUrl(data.data, 'firefox', true);
             }}
           >
-            <img src={ogMeta.image} alt="preview" />
+            <img src={ogMeta.image} alt="preview" onload={updateHeight}/>
           </a>
         </div>
       {/if}

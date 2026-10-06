@@ -43,8 +43,8 @@
 </script>
 
 {#if open}
-  <div class="modal-backdrop" on:click={close}></div>
-  <div class="modal" on:click|stopPropagation>
+  <div class="modal-backdrop" onclick={close}></div>
+  <div class="modal" onclick={(e) => e.stopPropagation()}>
     <h2>{id === null ? 'Add ' : 'Edit '} {type === 'link' ? 'Link' : 'Note'}</h2>
     {#if type === 'link'}
       <input type="url" placeholder="Paste link..." bind:value={content} />
@@ -53,8 +53,8 @@
     {/if}
     <input type="text" placeholder="Tags (comma separated)" bind:value={tags} />
     <div class="modal-actions">
-      <button on:click={submit}>Save</button>
-      <button on:click={close}>Cancel</button>
+      <button onclick={submit}>Save</button>
+      <button onclick={close}>Cancel</button>
     </div>
   </div>
 {/if}
