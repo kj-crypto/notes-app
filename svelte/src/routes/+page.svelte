@@ -95,17 +95,18 @@
     background: var(--card-bg, #fff);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 0;
-    max-width: 80vw;
+    gap: 0.75rem;
+    margin-bottom: 25px;
     width: 80%;
+    max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
-    padding-top: 12px;
-    padding-bottom: 8px;
-    box-shadow: var(--note-shadow-main, 0 2px 8px rgba(0, 0, 0, 0.03));
-    border-radius: 0 0 10px 10px;
+    padding: 16px 24px;
+    box-sizing: border-box;
+    box-shadow: var(--note-shadow-main, 0 4px 20px rgba(0, 0, 0, 0.04));
+    border-radius: 0 0 12px 12px;
     border: 1px solid var(--border-color, #e0e7ef);
+    border-top: none;
   }
 
   .navbar-actions {
@@ -164,7 +165,7 @@
     background: var(--card-bg-dark, #232336);
     color: var(--foreground-dark, #fafaff);
     border-color: var(--border-color-dark, #363a4f);
-    box-shadow: 0 2px 16px rgba(30, 41, 59, 0.18);
+    box-shadow: 0 4px 24px rgba(15, 15, 25, 0.3);
   }
   :global(body.dark) .navbar-actions button {
     background: var(--accent, #66aaff);
