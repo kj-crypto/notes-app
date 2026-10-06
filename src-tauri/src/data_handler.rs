@@ -100,9 +100,13 @@ fn get_data_file() -> PathBuf {
         Err(_) => ()
     }
     // In development, use env variable
-    if cfg!(debug_assertions) {
+    #[cfg(debug_assertions)]
+    {
         PathBuf::from(data_file)
-    } else {
+    }
+
+    #[cfg(not(debug_assertions))]
+    {
         // In production, try to use the AppImage location if available
         if let Ok(appimage_path) = env::var("APPIMAGE") {
             let dir = PathBuf::from(appimage_path)
