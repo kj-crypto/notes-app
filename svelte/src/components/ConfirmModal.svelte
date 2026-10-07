@@ -1,17 +1,15 @@
 <script lang="ts">
-  let { open = $bindable(false), message = 'Are you sure?', onConfirm, onCancel }: { open: boolean; message: string; onConfirm: () => void; onCancel: () => void } = $props();
+  let { message = 'Are you sure?', onConfirm, onCancel }: { message: string; onConfirm: () => void; onCancel: () => void } = $props();
 </script>
 
-{#if open}
-  <div class="modal-backdrop"></div>
-  <div class="modal">
-    <p>{message}</p>
-    <div class="modal-actions">
-      <button onclick={onConfirm}>Yes</button>
-      <button onclick={onCancel}>No</button>
-    </div>
+<div class="modal-backdrop"></div>
+<div class="modal">
+  <p>{message}</p>
+  <div class="modal-actions">
+    <button onclick={onConfirm}>Yes</button>
+    <button onclick={onCancel}>No</button>
   </div>
-{/if}
+</div>
 
 <style>
   /* Styles are imported from modal.css */

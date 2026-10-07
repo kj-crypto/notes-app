@@ -4,7 +4,7 @@
   import type { OgMeta } from '$lib/tauriInvokes';
   import { openUrl, appData, deleteData } from '$lib/tauriInvokes';
   import { tick } from 'svelte';
-  import { openNoteModal } from '$lib/modalService';
+  import { openNoteModal, openConfirmModal } from '$lib/modalService';
 
   let {
     id,
@@ -14,7 +14,7 @@
     onHeightChange: (id: number, height: number) => void;
   } = $props();
   let ogMeta: OgMeta = $state({});
-  let data = $derived(appData.get(id)!);
+  let data = $derived(appData.get(id));
   let height = 0;
   let eleRef = $state<HTMLElement | null>(null);
 
@@ -45,8 +45,8 @@
   });
 
   $effect(() => {
-    const url = data.data;
-    if (data.type !== 'link' || !url) return;
+    const url = data?.data;
+    if (data?.type !== 'link' || !url) return;
     getOgMeta(url).then((result) => {
       if (result) {
         ogMeta = result;
@@ -58,20 +58,20 @@
 {#snippet itemActions()}
   <div class="item-actions">
     <button title="Edit" onclick={() => openNoteModal(id)}>✏️</button>
-    <button title="Delete" onclick={() => {}}>🗑️</button>
+    <button title="Delete" onclick={() => openConfirmModal('Do you want to delete this item?', onDelete)}>🗑️</button>
   </div>
 {/snippet}
 
 {#snippet itemTags()}
   <div class="item-tags">
-    {#each data.tags as tag}
+    {#each data?.tags as tag}
       <div class="item-tag">{tag}</div>
     {/each}
   </div>
 {/snippet}
 
 <div bind:this={eleRef} class="item-container">
-  {#if data.type === 'link' && (ogMeta.title || ogMeta.description || ogMeta.image)}
+  {#if data?.type === 'link' && (ogMeta.title || ogMeta.description || ogMeta.image)}
     <div class="item-header">
       {#if ogMeta.title}
         {#if !ogMeta.image}
@@ -109,7 +109,7 @@
       {/if}
       {@render itemTags()}
     </div>
-  {:else if data.type === 'link'}
+  {:else if data?.type === 'link'}
     <div class="link-fallback-row">
       <a
         class="link"
@@ -121,7 +121,7 @@
       {@render itemActions()}
     </div>
     {@render itemTags()}
-  {:else if data.type === 'note'}
+  {:else if data?.type === 'note'}
     <div class="item-header">
       <span class="item-title">Note</span>
       {@render itemActions()}
