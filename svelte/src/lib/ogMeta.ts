@@ -9,7 +9,7 @@ export async function getOgMeta(url: string): Promise<OgMeta | null> {
     return Promise.resolve(ogMetaCache.get(url)!);
   }
   if (pendingPromises.has(url)) {
-    return pendingPromises.get(url)!
+    return pendingPromises.get(url)!;
   }
 
   const promise = async () => {
@@ -17,15 +17,13 @@ export async function getOgMeta(url: string): Promise<OgMeta | null> {
       const meta = await fetchOgMeta(url);
       ogMetaCache.set(url, meta);
       return meta;
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to fetch OG meta:', error);
       return null;
-    }
-    finally {
+    } finally {
       pendingPromises.delete(url);
     }
-  }
+  };
   const runningPromise = promise();
   pendingPromises.set(url, runningPromise);
   return runningPromise;

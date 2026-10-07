@@ -23,4 +23,3 @@ export function openNoteModal(id: number | null, type?: 'link' | 'note') {
     },
   });
 }
-

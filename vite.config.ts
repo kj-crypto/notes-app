@@ -6,11 +6,11 @@ export default defineConfig({
   root: path.resolve(__dirname, 'svelte'), // Set svelte/ as root
   plugins: [sveltekit()],
   resolve: {
-	alias: {
-	  $lib: path.resolve(__dirname, 'svelte/src/lib'),
-	  $routes: path.resolve(__dirname, 'svelte/src/routes'),
-	  $components: path.resolve(__dirname, 'svelte/src/components'),
-	}
+    alias: {
+      $lib: path.resolve(__dirname, 'svelte/src/lib'),
+      $routes: path.resolve(__dirname, 'svelte/src/routes'),
+      $components: path.resolve(__dirname, 'svelte/src/components'),
+    },
   },
   server: {
     fs: {
@@ -19,7 +19,7 @@ export default defineConfig({
         path.resolve(__dirname, 'svelte'),
         path.resolve(__dirname, 'svelte/src'),
         path.resolve(__dirname, 'svelte/static'),
-      ]
+      ],
     },
-  }
+  },
 });

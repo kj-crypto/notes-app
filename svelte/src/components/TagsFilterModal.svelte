@@ -1,9 +1,5 @@
 <script lang="ts">
-  let {
-    showTagModal = $bindable(false),
-    selectedTags = $bindable([]),
-    tags,
-  }: { showTagModal: boolean; selectedTags: string[]; tags: string[]; } = $props();
+  let { showTagModal = $bindable(false), selectedTags = $bindable([]), tags }: { showTagModal: boolean; selectedTags: string[]; tags: string[] } = $props();
 
   let filter = $state('');
 
@@ -54,8 +50,7 @@
           </div>
         </div>
         <div class="modal-actions">
-          <button
-            onclick={clear}>Clear</button>
+          <button onclick={clear}>Clear</button>
           <button onclick={close}>Close</button>
         </div>
       </div>

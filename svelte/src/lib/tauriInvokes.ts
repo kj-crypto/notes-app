@@ -8,16 +8,16 @@ export type OgMeta = {
   description?: string;
   image?: string;
   url?: string;
-}
+};
 
 export async function fetchOgMeta(url: string): Promise<OgMeta> {
   return await invoke('fetch_og_meta', { url });
-};
+}
 
 export async function getData(): Promise<Record<number, Data>> {
   try {
     appData.clear();
-    const data = await invoke('get_data') as Record<number, Data>;
+    const data = (await invoke('get_data')) as Record<number, Data>;
     for (const [key, value] of Object.entries(data)) {
       appData.set(Number(key), value);
     }
@@ -38,9 +38,9 @@ export async function deleteData(id: number): Promise<ApiResponse> {
   }
 }
 
-export async function upsertData(payload: { id: number | null, data: Data }): Promise<ApiResponse> {
+export async function upsertData(payload: { id: number | null; data: Data }): Promise<ApiResponse> {
   try {
-    const changedId = await invoke('upsert_data', { id: payload.id, data: payload.data }) as number;
+    const changedId = (await invoke('upsert_data', { id: payload.id, data: payload.data })) as number;
     appData.set(changedId, payload.data);
     return { status: 'success', message: payload.id ? 'Data updated' : 'Data created' };
   } catch (error) {

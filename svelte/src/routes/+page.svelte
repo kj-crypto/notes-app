@@ -19,18 +19,16 @@
 
   onMount(() => {
     getData();
-  })
+  });
 
-  let tags = $derived(
-    Array.from(new Set(Array.from(appData.values()).flatMap((item) => item.tags)))
-  );
+  let tags = $derived(Array.from(new Set(Array.from(appData.values()).flatMap((item) => item.tags))));
 
   let filteredIds = $derived.by(() => {
     const entries = Array.from(appData.entries());
 
     return entries
       .filter(([_, item]) => {
-        if (filterData.selectedTags.length > 0 && !item.tags.some(t => filterData.selectedTags.includes(t))) return false;
+        if (filterData.selectedTags.length > 0 && !item.tags.some((t) => filterData.selectedTags.includes(t))) return false;
         if (filterData.typeFilter !== 'both' && item.type !== filterData.typeFilter) return false;
         if (filterData.contentFilter.trim() !== '' && !item.data.toLowerCase().includes(filterData.contentFilter.toLowerCase())) return false;
         return true;

@@ -18,14 +18,13 @@
   function fetchItemHeight(id: number, height: number) {
     if (layoutVector[id].height > 0) {
       updateLayout(id, layoutVector[id].height, height);
-    }
-    else {
+    } else {
       incrementalLayoutUpdate(id, height);
     }
   }
 
   function incrementalLayoutUpdate(id: number, height: number) {
-    const layout = { height, top: 0, left: 0};
+    const layout = { height, top: 0, left: 0 };
     const colNum = columnHeights.indexOf(Math.min(...columnHeights));
     grid[colNum].push(id);
     layout.top = columnHeights[colNum];
@@ -44,7 +43,7 @@
     layoutVector[id].height = newHeight;
 
     for (let idx = j + 1; idx < grid[i].length; ++idx) {
-        layoutVector[grid[i][idx]].top += newHeight - oldHeight;
+      layoutVector[grid[i][idx]].top += newHeight - oldHeight;
     }
     columnHeights[i] += newHeight - oldHeight;
 
@@ -55,7 +54,7 @@
         const topLayout = layoutVector[topId];
 
         const tmpColumnHeights = [...columnHeights];
-        tmpColumnHeights[c] -= (topLayout.height + GAP);
+        tmpColumnHeights[c] -= topLayout.height + GAP;
         const newTopIndex = tmpColumnHeights.indexOf(Math.min(...tmpColumnHeights));
 
         if (newTopIndex !== c) {
@@ -92,7 +91,7 @@
         tempLayoutVector[id] = {
           height: currentHeight,
           top: columnHeights[colNum],
-          left: colNum * (COLUMN_WIDTH + GAP)
+          left: colNum * (COLUMN_WIDTH + GAP),
         };
         columnHeights[colNum] += currentHeight + GAP;
       }
@@ -132,21 +131,15 @@
 </script>
 
 <div class="notes-list-container">
-  <div
-    class="notes-masonry-grid"
-    style="height: {containerHeight}px; width: {containerWidth}px; --col-width: {COLUMN_WIDTH}px"
-  >
+  <div class="notes-masonry-grid" style="height: {containerHeight}px; width: {containerWidth}px; --col-width: {COLUMN_WIDTH}px">
     {#each Object.keys(layoutVector) as strId (strId)}
       {@const id = Number(strId)}
       {@const layout = layoutVector[id]}
       {#if layout}
-          <div
-            class="tile-absolute-wrapper"
-            style="transform: translate3d({layout.left}px, {layout.top}px, 0);"
-          >
-            <NoteItem {id} onHeightChange={fetchItemHeight} />
-          </div>
-        {/if}
+        <div class="tile-absolute-wrapper" style="transform: translate3d({layout.left}px, {layout.top}px, 0);">
+          <NoteItem {id} onHeightChange={fetchItemHeight} />
+        </div>
+      {/if}
     {/each}
   </div>
 </div>
@@ -164,7 +157,9 @@
     box-sizing: border-box;
     display: block;
 
-    transition: height 0.25s ease, width 0.25s ease;
+    transition:
+      height 0.25s ease,
+      width 0.25s ease;
   }
 
   .tile-absolute-wrapper {
