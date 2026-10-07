@@ -93,7 +93,7 @@ pub async fn fetch_og_meta(url: String) -> Result<OgMeta, String> {
     let page_type = dispatch_page_type(&url);
 
     if cfg!(debug_assertions) {
-        println!("OG_META fetching. URL: {}, is {:?}", url, page_type);
+        println!("[OgMeta] fetching url: {}, is {:?}", url, page_type);
     }
 
     match page_type{

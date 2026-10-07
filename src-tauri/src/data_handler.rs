@@ -42,6 +42,10 @@ pub async fn get_data(state: tauri::State<'_, AppState>) -> Result<DataMap, Stri
             }
         }
     }
+    #[cfg(debug_assertions)]
+    {
+        println!("[DataHandler] get_data returned: {} items", data.len());
+    }
     Ok(data.clone())
 }
 
@@ -59,6 +63,10 @@ pub async fn delete_data(id: DataId, state: tauri::State<'_, AppState>) -> Resul
     }
     save_data(&data);
     *last_id = *data.keys().max().unwrap_or(&0);
+    #[cfg(debug_assertions)]
+    {
+        println!("[DataHandler] delete_data: {} items remaining", data.len());
+    }
     Ok(id)
 }
 
@@ -71,6 +79,10 @@ pub async fn upsert_data(id: Option<DataId>, data: Data, state: tauri::State<'_,
         if let Some(value) = cached_data.get_mut(&id) {
             *value = data.clone();
             changed_id = id;
+            #[cfg(debug_assertions)]
+            {
+                println!("[DataHandler] upsert_data: updated item {}", id);
+            }
         }
         else {
             return Err(format!("Id {} not found", id));
@@ -87,6 +99,10 @@ pub async fn upsert_data(id: Option<DataId>, data: Data, state: tauri::State<'_,
         }
         cached_data.insert(*last_id, data.clone());
         changed_id = *last_id;
+        #[cfg(debug_assertions)]
+        {
+            println!("[DataHandler] upsert_data: created new item of id {}", *last_id);
+        }
     }
     save_data(&cached_data);
     Ok(changed_id)
