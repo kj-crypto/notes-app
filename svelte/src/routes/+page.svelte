@@ -1,14 +1,11 @@
 <script lang="ts">
-  import NoteModal from '$components/NoteModal.svelte';
   import ToastContainer from '$components/ToastContainer.svelte';
   import NotesList from '$components/NotesList.svelte';
   import { getData, appData } from '$lib/tauriInvokes';
   import FilterNavBar from '$components/FilterNavBar.svelte';
   import ThemeToggle from '$components/ThemeToggle.svelte';
   import { onMount } from 'svelte';
-
-  let showModal = $state(false);
-  let modalType: 'link' | 'note' = $state('link');
+  import { openNoteModal } from '$lib/modalService';
 
   let filterData: {
     contentFilter: string;
@@ -48,14 +45,12 @@
     <div class="navbar-actions">
       <button
         onclick={() => {
-          showModal = true;
-          modalType = 'link';
+          openNoteModal(null, 'link');
         }}>Add Link</button
       >
       <button
         onclick={() => {
-          showModal = true;
-          modalType = 'note';
+          openNoteModal(null, 'note');
         }}>Add Note</button
       >
       <ThemeToggle />
@@ -67,7 +62,6 @@
   </div>
 </div>
 
-<NoteModal bind:open={showModal} type={modalType} />
 <ToastContainer />
 
 <style>

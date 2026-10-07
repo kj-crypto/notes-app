@@ -1,13 +1,19 @@
 <script lang="ts">
-  import { upsertData, type Data } from '$lib/tauriInvokes';
+  import { appData, upsertData, type Data } from '$lib/tauriInvokes';
   import { toasts } from '$lib/toastStore';
-  let { content = '', tags = '', type = 'link', open = $bindable(false), id = null } = $props();
 
-  function close() {
-    content = '';
-    tags = '';
-    open = false;
+  export interface NoteModalProps {
+    id?: number | null;
+    type?: 'link' | 'note';
+    onClose: () => void;
   }
+
+  let { id = null, type = 'link', onClose }: NoteModalProps = $props();
+
+  const initialData = id !== null ? appData.get(id) : null;
+  type = initialData ? initialData.type : type;
+  let content = $state(initialData ? initialData.data : '');
+  let tags = $state(initialData ? initialData.tags.join(', ') : '');
 
   function parseTags(raw: string): string[] {
     return Array.from(
@@ -16,14 +22,13 @@
           .split(',')
           .map((t) => t.trim())
           .filter(Boolean)
-          .map((t) => t.toLowerCase()), // optional: make tags case-insensitive
+          .map((t) => t.toLowerCase()),
       ),
     );
   }
 
   async function submit() {
-    if (type === 'link' && !content) return;
-    if (type === 'note' && !content) return;
+    if (!content) return;
     const payload: { id: number | null; data: Data } = {
       id,
       data: {
@@ -38,26 +43,24 @@
     } else {
       toasts.show(`${type === 'link' ? 'Link' : 'Note'} failed to save. ${response.message}`, 'error');
     }
-    close();
+    onClose();
   }
 </script>
 
-{#if open}
-  <div class="modal-backdrop" onclick={close}></div>
-  <div class="modal" onclick={(e) => e.stopPropagation()}>
-    <h2>{id === null ? 'Add ' : 'Edit '} {type === 'link' ? 'Link' : 'Note'}</h2>
-    {#if type === 'link'}
-      <input type="url" placeholder="Paste link..." bind:value={content} />
-    {:else}
-      <textarea placeholder="Write note..." bind:value={content}></textarea>
-    {/if}
-    <input type="text" placeholder="Tags (comma separated)" bind:value={tags} />
-    <div class="modal-actions">
-      <button onclick={submit}>Save</button>
-      <button onclick={close}>Cancel</button>
-    </div>
+<div class="modal-backdrop" onclick={onClose}></div>
+<div class="modal" onclick={(e) => e.stopPropagation()}>
+  <h2>{id === null ? 'Add ' : 'Edit '} {type === 'link' ? 'Link' : 'Note'}</h2>
+  {#if type === 'link'}
+    <input type="url" placeholder="Paste link..." bind:value={content} />
+  {:else}
+    <textarea placeholder="Write note..." bind:value={content}></textarea>
+  {/if}
+  <input type="text" placeholder="Tags (comma separated)" bind:value={tags} />
+  <div class="modal-actions">
+    <button onclick={submit}>Save</button>
+    <button onclick={onClose}>Cancel</button>
   </div>
-{/if}
+</div>
 
 <style>
   h2 {

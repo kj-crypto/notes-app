@@ -1,25 +1,24 @@
 <script lang="ts">
-  import ConfirmModal from './ConfirmModal.svelte';
-  import NoteModal from './NoteModal.svelte';
   import { toasts } from '$lib/toastStore';
   import { getOgMeta } from '$lib/ogMeta';
   import type { OgMeta } from '$lib/tauriInvokes';
   import { openUrl, appData, deleteData } from '$lib/tauriInvokes';
   import { tick } from 'svelte';
+  import { openNoteModal } from '$lib/modalService';
 
-  let { id, onHeightChange }: {
+  let {
+    id,
+    onHeightChange,
+  }: {
     id: number;
-    onHeightChange: (id: number, height: number) => void
+    onHeightChange: (id: number, height: number) => void;
   } = $props();
-  let showConfirm = $state(false);
-  let showEditModal = $state(false);
   let ogMeta: OgMeta = $state({});
   let data = $derived(appData.get(id)!);
   let height = 0;
   let eleRef = $state<HTMLElement | null>(null);
 
   const onDelete: () => void = async () => {
-    showConfirm = false;
     const response = await deleteData(id);
     if (response.status === 'success') {
       toasts.show('Item deleted', 'success');
@@ -56,15 +55,10 @@
   });
 </script>
 
-<ConfirmModal bind:open={showConfirm} message="Are you sure you want to delete this item?" onConfirm={onDelete} onCancel={() => (showConfirm = false)} />
-{#if showEditModal}
-  <NoteModal bind:open={showEditModal} type={data.type} {id} content={data.data} tags={data.tags.join(', ')} />
-{/if}
-
 {#snippet itemActions()}
   <div class="item-actions">
-    <button title="Edit" onclick={() => (showEditModal = true)}>✏️</button>
-    <button title="Delete" onclick={() => (showConfirm = true)}>🗑️</button>
+    <button title="Edit" onclick={() => openNoteModal(id)}>✏️</button>
+    <button title="Delete" onclick={() => {}}>🗑️</button>
   </div>
 {/snippet}
 
@@ -109,7 +103,7 @@
               openUrl(data.data, 'firefox', true);
             }}
           >
-            <img src={ogMeta.image} alt="preview" onload={updateHeight}/>
+            <img src={ogMeta.image} alt="preview" onload={updateHeight} />
           </a>
         </div>
       {/if}
@@ -210,6 +204,8 @@
     margin-bottom: 2px;
     line-height: 1.4;
     white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   .og-bottom {
@@ -233,6 +229,7 @@
     font-size: 0.95em;
     text-decoration: underline;
     word-break: break-all;
+    overflow-wrap: anywhere;
   }
 
   .item-tags {
