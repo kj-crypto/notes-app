@@ -32,7 +32,7 @@ notes-app/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or higher)
+- [Node.js](https://nodejs.org/) (v24 or higher)
 - [Docker](https://www.docker.com/)
 
 ### Installation
