@@ -9,7 +9,8 @@
   let numColumns = $state(1);
   let containerHeight = $state(0);
   let containerWidth = $derived(numColumns * (COLUMN_WIDTH + GAP) - GAP);
-  let layoutVector = $state<Record<number, { height: number; top: number; left: number }>>({});
+  type Layout = { height: number; top: number; left: number };
+  let layoutVector = $state<Record<number, Layout>>({});
 
   // grid
   let grid: number[][];
@@ -51,8 +52,10 @@
       let shuffled = false;
       for (let c = 0; c < grid.length; ++c) {
         const topId = grid[c][grid[c].length - 1];
-        const topLayout = layoutVector[topId];
-
+        const topLayout: Layout | undefined = layoutVector[topId];
+        if (!topLayout) {
+          break;
+        }
         const tmpColumnHeights = [...columnHeights];
         tmpColumnHeights[c] -= topLayout.height + GAP;
         const newTopIndex = tmpColumnHeights.indexOf(Math.min(...tmpColumnHeights));
