@@ -111,9 +111,10 @@ pub async fn upsert_data(id: Option<DataId>, data: Data, state: tauri::State<'_,
 fn get_data_file() -> PathBuf {
     const DEFAULT_DATA_FILE: &str = env!("DATA_JSON_FILENAME", "DATA_JSON_FILENAME must be set at build time (e.g., via `DATA_JSON_FILENAME=yourfile.json cargo build`).");
     let mut data_file = DEFAULT_DATA_FILE.to_string();
-    match std::env::var("DATA_JSON_FILENAME") {
-        Ok(env) => { if !env.is_empty() { data_file = env } },
-        Err(_) => ()
+    if let Ok(env) = std::env::var("DATA_JSON_FILENAME") {
+        if !env.is_empty() {
+            data_file = env;
+        }
     }
     // In development, use env variable
     #[cfg(debug_assertions)]
