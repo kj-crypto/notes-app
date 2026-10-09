@@ -51,11 +51,10 @@ fn init_global_http_client() -> Result<(), String> {
     headers.insert("sec-fetch-user", HeaderValue::from_static("?1"));
     headers.insert("upgrade-insecure-requests", HeaderValue::from_static("1"));
 
-    if let Ok(token) = std::env::var("YOUTUBE_SOCS") {
-        if !token.is_empty() {
+    if let Ok(token) = std::env::var("YOUTUBE_SOCS")
+        && !token.is_empty() {
             headers.insert(COOKIE, format!("SOCS={}", token).parse().unwrap());
         }
-    }
 
     let client = reqwest::Client::builder()
         .default_headers(headers)

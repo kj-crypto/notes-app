@@ -33,14 +33,12 @@ pub async fn get_data(state: tauri::State<'_, AppState>) -> Result<DataMap, Stri
     if data.is_empty() {
         let file = get_data_file();
         *data = HashMap::new();
-        if std::fs::metadata(&file).is_ok() {
-            if let Ok(content) = std::fs::read_to_string(&file) {
-                if let Ok(parsed) = serde_json::from_str(&content) {
+        if std::fs::metadata(&file).is_ok()
+            && let Ok(content) = std::fs::read_to_string(&file)
+                && let Ok(parsed) = serde_json::from_str(&content) {
                     *data = parsed;
                     *last_id = *data.keys().max().unwrap_or(&0);
                 }
-            }
-        }
     }
     #[cfg(debug_assertions)]
     {
@@ -119,11 +117,10 @@ fn get_data_file() -> PathBuf {
         "DATA_JSON_FILENAME must be set at build time (e.g., via `DATA_JSON_FILENAME=yourfile.json cargo build`)."
     );
     let mut data_file = DEFAULT_DATA_FILE.to_string();
-    if let Ok(env) = std::env::var("DATA_JSON_FILENAME") {
-        if !env.is_empty() {
+    if let Ok(env) = std::env::var("DATA_JSON_FILENAME")
+        && !env.is_empty() {
             data_file = env;
         }
-    }
     // In development, use env variable
     #[cfg(debug_assertions)]
     {

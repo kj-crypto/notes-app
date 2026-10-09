@@ -178,14 +178,13 @@ impl<'a> Extract<'a> for HtmlParser<'a> {
                         _ => {}
                     };
                 }
-                if meta.title.is_empty() {
-                    if let Some(t_el) = document.select(&TITLE_SELECTOR).next() {
+                if meta.title.is_empty()
+                    && let Some(t_el) = document.select(&TITLE_SELECTOR).next() {
                         let text = t_el.text().collect::<String>().trim().to_string();
                         if !text.is_empty() {
                             meta.title.insert(MetaSourceKey::Default, text);
                         }
                     }
-                }
                 Ok((meta, ThreadSafeHtml(document)))
             })
             .await

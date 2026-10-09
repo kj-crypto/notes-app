@@ -39,11 +39,10 @@ pub fn detect_broken_link(body: &str, document: &scraper::Html) -> bool {
     }
 
     for meta_element in document.select(&META_TITLE_DESC_SELECTOR) {
-        if let Some(content) = meta_element.value().attr("content") {
-            if BROKEN_KEYWORDS_REGEX.is_match(content) {
+        if let Some(content) = meta_element.value().attr("content")
+            && BROKEN_KEYWORDS_REGEX.is_match(content) {
                 return true;
             }
-        }
     }
 
     false
