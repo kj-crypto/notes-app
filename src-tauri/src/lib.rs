@@ -1,6 +1,7 @@
 mod ogmeta;
 mod data_handler;
 mod link_opener;
+mod utils;
 use std::sync::Mutex;
 use std::collections::HashMap;
 use tauri::Manager;
@@ -25,6 +26,10 @@ pub fn run() {
         data: Mutex::new(HashMap::new()),
         last_id: Mutex::new(0),
       });
+      if let Err(e) = utils::http_client::init_global_network_manager() {
+        eprintln!("Failed to initialize global network manager: {}", e);
+        return Err(e.into())
+      }
       Ok(())
     })
     .run(tauri::generate_context!())
