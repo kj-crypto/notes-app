@@ -1,5 +1,9 @@
 #[tauri::command]
-pub fn open_url(url: String, browser: Option<String>, incognito: Option<bool>) -> Result<(), String> {
+pub fn open_url(
+    url: String,
+    browser: Option<String>,
+    incognito: Option<bool>,
+) -> Result<(), String> {
     let incognito = incognito.unwrap_or(false);
 
     #[cfg(target_os = "windows")]

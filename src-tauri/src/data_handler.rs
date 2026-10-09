@@ -1,8 +1,8 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::Mutex;
-use std::path::{PathBuf};
 use std::env;
+use std::path::PathBuf;
+use std::sync::Mutex;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -22,8 +22,8 @@ pub type DataId = u64;
 pub type DataMap = HashMap<DataId, Data>;
 
 pub struct AppState {
-  pub data: Mutex<DataMap>,
-  pub last_id: Mutex<DataId>,
+    pub data: Mutex<DataMap>,
+    pub last_id: Mutex<DataId>,
 }
 
 #[tauri::command]
@@ -71,7 +71,11 @@ pub async fn delete_data(id: DataId, state: tauri::State<'_, AppState>) -> Resul
 }
 
 #[tauri::command]
-pub async fn upsert_data(id: Option<DataId>, data: Data, state: tauri::State<'_, AppState>) -> Result<DataId, String> {
+pub async fn upsert_data(
+    id: Option<DataId>,
+    data: Data,
+    state: tauri::State<'_, AppState>,
+) -> Result<DataId, String> {
     let mut cached_data = state.data.lock().unwrap();
     let mut last_id = state.last_id.lock().unwrap();
     let changed_id;
@@ -83,25 +87,26 @@ pub async fn upsert_data(id: Option<DataId>, data: Data, state: tauri::State<'_,
             {
                 println!("[DataHandler] upsert_data: updated item {}", id);
             }
-        }
-        else {
+        } else {
             return Err(format!("Id {} not found", id));
         }
-    }
-    else {
+    } else {
         *last_id += 1;
         if data.r#type == Type::Link {
-           for obj in cached_data.values() {
-               if obj.data == data.data {
-                   return Err(format!("Link {} already exists", data.data));
-               }
-           }
+            for obj in cached_data.values() {
+                if obj.data == data.data {
+                    return Err(format!("Link {} already exists", data.data));
+                }
+            }
         }
         cached_data.insert(*last_id, data.clone());
         changed_id = *last_id;
         #[cfg(debug_assertions)]
         {
-            println!("[DataHandler] upsert_data: created new item of id {}", *last_id);
+            println!(
+                "[DataHandler] upsert_data: created new item of id {}",
+                *last_id
+            );
         }
     }
     save_data(&cached_data);
@@ -109,7 +114,10 @@ pub async fn upsert_data(id: Option<DataId>, data: Data, state: tauri::State<'_,
 }
 
 fn get_data_file() -> PathBuf {
-    const DEFAULT_DATA_FILE: &str = env!("DATA_JSON_FILENAME", "DATA_JSON_FILENAME must be set at build time (e.g., via `DATA_JSON_FILENAME=yourfile.json cargo build`).");
+    const DEFAULT_DATA_FILE: &str = env!(
+        "DATA_JSON_FILENAME",
+        "DATA_JSON_FILENAME must be set at build time (e.g., via `DATA_JSON_FILENAME=yourfile.json cargo build`)."
+    );
     let mut data_file = DEFAULT_DATA_FILE.to_string();
     if let Ok(env) = std::env::var("DATA_JSON_FILENAME") {
         if !env.is_empty() {
