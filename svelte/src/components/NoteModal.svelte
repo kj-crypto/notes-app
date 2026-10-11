@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appData, upsertData, type Data } from '$lib/tauriInvokes';
   import { toasts } from '$lib/toastStore';
+  import YoutubePlaylistSelector from './YoutubePlaylistSelector.svelte';
 
   export interface NoteModalProps {
     id?: number | null;
@@ -14,6 +15,10 @@
   type = initialData ? initialData.type : type;
   let content = $state(initialData ? initialData.data : '');
   let tags = $state(initialData ? initialData.tags.join(', ') : '');
+
+  let isYouTubeLink = $derived(type === 'link' && (content.includes('youtube.com') || content.includes('youtu.be')));
+  let playlistName = $state('');
+  let shouldStripYoutubeLink = $state(true);
 
   function parseTags(raw: string): string[] {
     return Array.from(
@@ -37,7 +42,7 @@
         tags: parseTags(tags),
       },
     };
-    const response = await upsertData(payload);
+    const response = await upsertData({ ...payload, playlistName: isYouTubeLink ? playlistName : null });
     if (response.status === 'success') {
       toasts.show(`${type === 'link' ? 'Link' : 'Note'} saved!`, 'success');
     } else {
@@ -50,12 +55,17 @@
 <div class="modal-backdrop" onclick={onClose}></div>
 <div class="modal" onclick={(e) => e.stopPropagation()}>
   <h2>{id === null ? 'Add ' : 'Edit '} {type === 'link' ? 'Link' : 'Note'}</h2>
-  {#if type === 'link'}
-    <input type="url" placeholder="Paste link..." bind:value={content} />
-  {:else}
-    <textarea placeholder="Write note..." bind:value={content}></textarea>
-  {/if}
-  <input type="text" placeholder="Tags (comma separated)" bind:value={tags} />
+  <div class="modal-body-form">
+    {#if type === 'link'}
+      <input type="url" class="modal-field-input" placeholder="Paste link..." bind:value={content} />
+    {:else}
+      <textarea class="modal-field-input" placeholder="Write note..." bind:value={content}></textarea>
+    {/if}
+    <input type="text" class="modal-field-input" placeholder="Tags (comma separated)" bind:value={tags} />
+    {#if isYouTubeLink}
+      <YoutubePlaylistSelector bind:name={playlistName} bind:stripLink={shouldStripYoutubeLink} inputClass="modal-field-input" />
+    {/if}
+  </div>
   <div class="modal-actions">
     <button onclick={submit}>Save</button>
     <button onclick={onClose}>Cancel</button>
@@ -71,9 +81,14 @@
     letter-spacing: 0.01em;
   }
 
-  .modal input[type='url'],
-  .modal input[type='text'],
-  .modal textarea {
+  .modal-body-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .modal :global(.modal-field-input) {
     width: 100%;
     padding: 0.65rem 0.9rem;
     border-radius: 6px;
@@ -85,13 +100,12 @@
     box-sizing: border-box;
   }
 
-  .modal input:focus,
-  .modal textarea:focus {
+  .modal :global(.modal-field-input):focus {
     border-color: var(--modal-input-focus, #6c63ff);
     outline: none;
   }
 
-  .modal textarea {
+  .modal textarea.modal-field-input {
     min-height: 78px;
     resize: vertical;
   }
