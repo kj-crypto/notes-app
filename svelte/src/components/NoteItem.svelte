@@ -1,6 +1,6 @@
 <script lang="ts">
   import { toasts } from '$lib/toastStore';
-  import { getOgMeta } from '$lib/ogMeta';
+  import { BrokenLinkInstance, getOgMeta, deleteOgMeta } from '$lib/ogMeta';
   import type { OgMeta } from '$lib/tauriInvokes';
   import { openUrl, appData, deleteData } from '$lib/tauriInvokes';
   import { tick } from 'svelte';
@@ -17,6 +17,7 @@
   let data = $derived(appData.get(id));
   let height = 0;
   let eleRef = $state<HTMLElement | null>(null);
+  let isBrokenLink = $state(false);
 
   const onDelete: () => void = async () => {
     const response = await deleteData(id);
@@ -46,12 +47,23 @@
 
   $effect(() => {
     const url = data?.data;
-    if (data?.type !== 'link' || !url) return;
-    getOgMeta(url).then((result) => {
-      if (result) {
-        ogMeta = result;
-      }
-    });
+    if (data?.type !== 'link' || !url) {
+      isBrokenLink = false;
+      return;
+    }
+    console.log('Fetching OG meta for', url);
+    getOgMeta(url)
+      .then((result) => {
+        if (result === BrokenLinkInstance) {
+          console.log(`Broken link detected! ${id} -- ${url}`);
+          isBrokenLink = true;
+        } else if (result) {
+          ogMeta = result;
+        }
+      })
+      .catch((error) => {
+        console.error('Promise error:', error);
+      });
   });
 </script>
 
@@ -70,7 +82,7 @@
   </div>
 {/snippet}
 
-<div bind:this={eleRef} class="item-container">
+<div bind:this={eleRef} class="item-container" class:broken={isBrokenLink}>
   {#if data?.type === 'link' && (ogMeta.title || ogMeta.description || ogMeta.image)}
     <div class="item-header">
       {#if ogMeta.title}
@@ -153,6 +165,10 @@
   .item-container:hover {
     box-shadow: var(--note-shadow-hover);
     border-color: var(--note-border-hover);
+  }
+
+  .item-container.broken {
+    border-color: #ef4444;
   }
 
   .item-header {
