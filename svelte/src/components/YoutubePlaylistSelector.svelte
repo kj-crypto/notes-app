@@ -1,25 +1,45 @@
 <script lang="ts">
-  // TODO: Change in production
-  import { MOCKED_PLAYLISTS } from '$lib/mocks';
+  import { appData } from '$lib/tauriInvokes';
+  import { tick } from 'svelte';
+
   const SUGGESTIONS_LIMIT = 5;
 
-  let { name = $bindable(''), stripLink = $bindable(true), inputClass = '' }: { name: string; stripLink: boolean; inputClass: string } = $props();
+  let { playlists = $bindable([]), stripLink = $bindable(true), inputClass = '' }: { playlists: string[]; stripLink: boolean; inputClass: string } = $props();
   let isDropdownOpen = $state(false);
   let activeIndex = $state(-1); // Tracks currently keyboard-highlighted option
   let listElement = $state<HTMLUListElement | null>(null); // DOM reference for auto-scrolling
+  let inputValue = $state('');
+  let inputElement = $state<HTMLInputElement | null>(null);
+  let currentPlaylists = $derived(Array.from(appData.playlists.keys()));
 
-  // 1. Reactive derivation: Find matches sorted alphabetically/by relevance (NO slice limit)
+  $effect(() => {
+    if (playlists.length > 0 && !inputValue) {
+      inputValue = playlists.join(', ') + ', ';
+    }
+  });
+
+  let currentSearchSegment = $derived.by(() => {
+    const segments = inputValue.split(',');
+    return segments[segments.length - 1].trim().toLowerCase();
+  });
+
   let filteredPlaylists = $derived.by(() => {
-    const searchString = name.trim().toLowerCase();
+    const searchString = currentSearchSegment;
     if (!searchString) return [];
 
-    return MOCKED_PLAYLISTS.filter((playlist) => playlist.toLowerCase().includes(searchString)).sort((a, b) => {
-      const aStarts = a.toLowerCase().startsWith(searchString);
-      const bStarts = b.toLowerCase().startsWith(searchString);
-      if (aStarts && !bStarts) return -1;
-      if (!aStarts && bStarts) return 1;
-      return a.localeCompare(b);
-    });
+    return currentPlaylists
+      .filter((playlist) => {
+        const isAlreadySelected = playlists.some((p) => p.toLowerCase() === playlist.toLowerCase());
+        const matchesSearch = playlist.toLowerCase().includes(searchString);
+        return matchesSearch && !isAlreadySelected;
+      })
+      .sort((a, b) => {
+        const aStarts = a.toLowerCase().startsWith(searchString);
+        const bStarts = b.toLowerCase().startsWith(searchString);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        return a.localeCompare(b);
+      });
   });
 
   // Automatically adjust scroll position to keep the highlighted item in view
@@ -39,11 +59,27 @@
     }
   });
 
-  // 2. Autocomplete Handler for mouse clicks and keyboard tab overrides
-  function autocomplete(selectedName: string) {
-    name = selectedName;
+  // Autocomplete Handler for mouse clicks and keyboard tab overrides
+  async function autocomplete(selectedName: string) {
+    const segments = inputValue.split(',').map((s) => s.trim());
+    segments.pop();
+
+    const cleanSegments = segments.filter(Boolean);
+    playlists = [...cleanSegments, selectedName];
+    inputValue = playlists.join(', ') + ', ';
+
     isDropdownOpen = false;
     activeIndex = -1;
+
+    await tick();
+    if (inputElement) {
+      inputElement.focus();
+
+      const endPosition = inputValue.length;
+      inputElement.setSelectionRange(endPosition, endPosition);
+      // Scroll to the maximum horizontal position
+      inputElement.scrollLeft = inputElement.scrollWidth + 1000;
+    }
   }
 
   // Intercept keyboard controls when suggestions are active
@@ -79,17 +115,29 @@
 <div class="single-row-container">
   <div class="playlist-selector-container">
     <input
+      bind:this={inputElement}
       type="text"
       class={inputClass}
-      placeholder="Youtube playlist name"
-      value={name}
+      placeholder="Youtube playlist names"
+      value={inputValue}
       oninput={(e) => {
-        name = (e.target as HTMLInputElement).value;
+        inputValue = (e.target as HTMLInputElement).value;
         isDropdownOpen = true;
+
+        const segments = inputValue.split(',').map((p) => p.trim());
+        if (!inputValue.endsWith(',')) {
+          segments.pop();
+        }
+        playlists = segments.filter((p) => p.length > 0);
       }}
       onkeydown={handleKeyDown}
       onfocus={() => (isDropdownOpen = true)}
-      onblur={() => setTimeout(() => (isDropdownOpen = false), 150)}
+      onblur={(e) => {
+        const currentTarget = e.currentTarget as HTMLElement;
+        if (!currentTarget.parentElement?.contains(e.relatedTarget as Node)) {
+          isDropdownOpen = false;
+        }
+      }}
       autocomplete="off"
     />
 
